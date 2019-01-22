@@ -29,28 +29,24 @@ const updateByEvents = async (repository, events) => {
   }
 
   if (writeElapsedTime > writeActivityTime) {
-    try {
-      await repository.loadEvents(repository)
-    } catch (err) {}
+    await repository.loadEvents(repository)
   }
 
-  try {
-    let hasReorderedEvents = false
+  let hasReorderedEvents = false
 
-    for (const event of events) {
-      if (repository.eventTypes.indexOf(event.type) < 0) continue
-      const applyResult = await repository.boundProjectionInvoker(event, true)
+  for (const event of events) {
+    if (repository.eventTypes.indexOf(event.type) < 0) continue
+    const applyResult = await repository.boundProjectionInvoker(event, true)
 
-      if (applyResult === 'REORDERED_EVENT') {
-        hasReorderedEvents = true
-        break
-      }
+    if (applyResult === 'REORDERED_EVENT') {
+      hasReorderedEvents = true
+      break
     }
+  }
 
-    if (hasReorderedEvents) {
-      await repository.loadEvents(repository)
-    }
-  } catch (err) {}
+  if (hasReorderedEvents) {
+    await repository.loadEvents(repository)
+  }
 }
 
 export default updateByEvents
